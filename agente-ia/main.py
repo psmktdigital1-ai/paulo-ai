@@ -306,9 +306,45 @@ if "nome_confirmado" not in st.session_state:
     st.session_state.nome_confirmado = False
 
 # ══════════════════════════════════════════════════════════════
+# BASE DE CONHECIMENTO REAL — SERVIÇOS E PREÇOS
+# (compartilhada por todos os nichos, pra IA nunca inventar valor)
+# ══════════════════════════════════════════════════════════════
+CONHECIMENTO_SERVICOS = """
+
+INFORMAÇÕES REAIS SOBRE OS SERVIÇOS DO PAULO (use para responder perguntas sobre preço, pacotes e serviços — nunca invente valores diferentes destes):
+
+SERVIÇOS E FAIXAS DE PREÇO:
+- Chatbot com IA (WhatsApp ou site): R$ 1.500–5.000 de implementação + R$ 300–800/mês
+- Automações com IA (n8n, cobrança, follow-up, relatórios): R$ 800–8.000 por projeto + R$ 300–500/mês
+- Tráfego pago (Google, Meta, TikTok): R$ 500–1.500 de setup + R$ 800–2.500/mês
+- Dashboards de performance (Looker Studio, Power BI, Streamlit): R$ 1.200–3.500 de setup + R$ 200–500/mês
+- Retail Media & E-commerce (Amazon Ads, ML Ads, Shopee): R$ 1.500–2.500 de setup + R$ 1.200–2.000/mês
+- Pesquisa de mercado com IA: R$ 1.500 de setup + R$ 800/mês
+- Consultoria em IA & Dados: R$ 800–2.400 por sessão ou pacote
+
+PACOTES MENSAIS:
+- Starter — R$ 2.000/mês: chatbot básico (1 nicho), 1 automação simples, relatório mensal, suporte via WhatsApp
+- Growth — R$ 4.000/mês: chatbot completo (5 nichos), 2 automações com IA, tráfego pago (1 plataforma), dashboard de performance, reunião quinzenal
+- Pro — R$ 7.500/mês (o mais popular): chatbot + WhatsApp Bot, automações ilimitadas, tráfego pago (3 plataformas), Retail Media, dashboard completo, consultoria mensal
+- Enterprise — sob consulta: tudo do Pro + pesquisa de mercado, Data Science aplicado, 20h/mês dedicadas, SLA garantido
+
+COMO FUNCIONA: diagnóstico gratuito de 30 minutos → proposta personalizada em até 2 dias → desenvolvimento em 7–14 dias → 30 dias de suporte incluído após a entrega.
+
+CONTATO PARA FECHAR: WhatsApp (11) 95113-1232, ou agendar diagnóstico gratuito em calendar.app.google/T7JSVQ1ssH3UjAkE6
+
+Se o usuário perguntar sobre preço, pacote, prazo ou como contratar, responda com esses dados reais de forma natural na conversa (não como lista decorada) e sempre incentive marcar o diagnóstico gratuito ou chamar no WhatsApp."""
+
+# ══════════════════════════════════════════════════════════════
 # NICHOS
 # ══════════════════════════════════════════════════════════════
 NICHOS = {
+    "🤖 Geral": {
+        "badge": "Chat Geral",
+        "prompt": """Você é Paulo AI, assistente inteligente geral com acesso à internet em tempo real, criado por Paulo Santos (Growth AI) — especialista em Dados, IA e Automação, pós-graduado em Ciências de Dados & Inteligência Artificial.
+Responda qualquer pergunta: tecnologia, negócios, IA, automação, ciência, curiosidades e mais.
+Seja útil, claro e direto. Responda em português brasileiro.
+Quando relevante, mencione que Paulo Santos pode ajudar com automação e IA para negócios.""" + CONHECIMENTO_SERVICOS
+    },
     "🏥 Clínica / Saúde": {
         "badge": "Especialista em Clínicas",
         "prompt": """IDENTIDADE — Paulo Santos (Growth AI):
@@ -326,7 +362,7 @@ REGRAS:
    4. Responda sempre em português brasileiro.
 
 NICHO: Clínicas, consultórios e espaços de saúde.
-EXPERTISE: agendamento automático, lembretes WhatsApp, redução de faltas, pós-consulta automático."""
+EXPERTISE: agendamento automático, lembretes WhatsApp, redução de faltas, pós-consulta automático.""" + CONHECIMENTO_SERVICOS
     },
     "🏢 Corretora de Seguros": {
         "badge": "Especialista em Seguros",
@@ -341,7 +377,7 @@ REGRAS:
 3. CTA: 4. Responda em português brasileiro.
 
 NICHO: Corretoras de seguros.
-EXPERTISE: cotação automática via WhatsApp, CRM de leads, follow-up de renovações, pipeline de vendas."""
+EXPERTISE: cotação automática via WhatsApp, CRM de leads, follow-up de renovações, pipeline de vendas.""" + CONHECIMENTO_SERVICOS
     },
     "📊 Escritório Contábil": {
         "badge": "Especialista em Contabilidade",
@@ -356,7 +392,7 @@ REGRAS:
 3. CTA: 4. Responda em português brasileiro.
 
 NICHO: Escritórios de contabilidade.
-EXPERTISE: cobrança automática de documentos, DRE automático, lembretes de prazos fiscais."""
+EXPERTISE: cobrança automática de documentos, DRE automático, lembretes de prazos fiscais.""" + CONHECIMENTO_SERVICOS
     },
     "✂️ Barbearia / Estética": {
         "badge": "Especialista em Barbearias",
@@ -371,7 +407,7 @@ REGRAS:
 3. CTA: 4. Responda em português brasileiro.
 
 NICHO: Barbearias, salões e estúdios de estética.
-EXPERTISE: agendamento automático, redução de no-show, reativação de clientes inativos."""
+EXPERTISE: agendamento automático, redução de no-show, reativação de clientes inativos.""" + CONHECIMENTO_SERVICOS
     },
     "🛒 E-commerce / Loja": {
         "badge": "Especialista em E-commerce",
@@ -386,14 +422,7 @@ REGRAS:
 3. CTA: 4. Responda em português brasileiro.
 
 NICHO: E-commerce e lojas virtuais.
-EXPERTISE: Amazon Ads, ML Ads, Shopee, análise de SKU e ROAS, automação de campanhas."""
-    },
-    "🤖 Geral": {
-        "badge": "Chat Geral",
-        "prompt": """Você é Paulo AI, assistente inteligente geral com acesso à internet em tempo real.
-Responda qualquer pergunta: tecnologia, negócios, IA, automação, ciência, curiosidades e mais.
-Seja útil, claro e direto. Responda em português brasileiro.
-Quando relevante, mencione que Paulo Santos pode ajudar com automação e IA para negócios."""
+EXPERTISE: Amazon Ads, ML Ads, Shopee, análise de SKU e ROAS, automação de campanhas.""" + CONHECIMENTO_SERVICOS
     },
 }
 
@@ -582,6 +611,26 @@ config = NICHOS[nicho]
 st.markdown(f'<div style="text-align:center;margin-bottom:1rem"><span class="nicho-badge">✦ {config["badge"]}</span></div>', unsafe_allow_html=True)
 
 # ── ESTADO POR NICHO ──────────────────────────────────────────
+if "sugestao_clicada" not in st.session_state:
+    st.session_state.sugestao_clicada = None
+
+_msgs_atuais_preview = st.session_state.msgs.get(nicho, [])
+if not _msgs_atuais_preview:
+    st.markdown("""
+<style>
+.stButton button{background:#1a1a1a!important;border:1px solid #2a2a2a!important;color:#d4d0cb!important;
+border-radius:10px!important;font-size:0.82rem!important;padding:0.5rem 0.4rem!important;white-space:normal!important}
+.stButton button:hover{border-color:#0ea5e960!important;color:#ffffff!important}
+</style>
+""", unsafe_allow_html=True)
+    sug_cols = st.columns(3)
+    SUGESTOES = ["💰 Quanto custa um chatbot?", "⚙️ Como funciona a automação com IA?", "📦 Quero ver os pacotes"]
+    for i, sug in enumerate(SUGESTOES):
+        with sug_cols[i]:
+            if st.button(sug, key=f"sug_{i}", use_container_width=True):
+                st.session_state.sugestao_clicada = sug.split(" ", 1)[1]
+    st.markdown("<div style='margin-bottom:0.6rem'></div>", unsafe_allow_html=True)
+
 for key in ["msgs", "hist_gemini"]:
     if nicho not in st.session_state[key]:
         st.session_state[key][nicho] = []
@@ -656,6 +705,10 @@ def responder_groq(system_prompt, historico, mensagem_com_contexto):
 
 # ── CHAT INPUT ────────────────────────────────────────────────
 entrada = st.chat_input(f"Pergunte sobre {config['badge'].lower()}...")
+
+if not entrada and st.session_state.sugestao_clicada:
+    entrada = st.session_state.sugestao_clicada
+    st.session_state.sugestao_clicada = None
 
 if entrada:
     # Salva primeira pergunta
