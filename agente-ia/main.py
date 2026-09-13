@@ -259,7 +259,7 @@ Responda SOMENTE o JSON, sem explicação:
     if GEMINI_API_KEY:
         try:
             genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            model = genai.GenerativeModel("gemini-3.6-flash")
             raw = model.generate_content(prompt).text
             raw = re.sub(r"```json|```", "", raw).strip()
             return json.loads(raw)
@@ -271,7 +271,7 @@ Responda SOMENTE o JSON, sem explicação:
             resp = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-                json={"model": "llama-3.3-70b-versatile",
+                json={"model": "openai/gpt-oss-120b",
                       "messages": [{"role": "user", "content": prompt}],
                       "temperature": 0, "max_tokens": 200},
                 timeout=20
@@ -681,7 +681,7 @@ def precisa_buscar(p):
 def responder_gemini(system_prompt, historico, mensagem_com_contexto):
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-3.6-flash",
         system_instruction=system_prompt
     )
     hist_fmt = []
@@ -700,7 +700,7 @@ def responder_groq(system_prompt, historico, mensagem_com_contexto):
     resp = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        json={"model": "llama-3.3-70b-versatile", "messages": msgs_g,
+        json={"model": "openai/gpt-oss-120b", "messages": msgs_g,
               "temperature": 0.5, "max_tokens": 1024},
         timeout=30
     )
