@@ -259,7 +259,7 @@ Responda SOMENTE o JSON, sem explicação:
     if GEMINI_API_KEY:
         try:
             genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-2.5-flash-preview-04-17")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             raw = model.generate_content(prompt).text
             raw = re.sub(r"```json|```", "", raw).strip()
             return json.loads(raw)
@@ -276,7 +276,10 @@ Responda SOMENTE o JSON, sem explicação:
                       "temperature": 0, "max_tokens": 200},
                 timeout=20
             )
-            raw = resp.json()["choices"][0]["message"]["content"]
+            data = resp.json()
+            if "choices" not in data:
+                raise RuntimeError(data.get("error", {}).get("message", str(data)))
+            raw = data["choices"][0]["message"]["content"]
             raw = re.sub(r"```json|```", "", raw).strip()
             return json.loads(raw)
         except Exception:
@@ -678,7 +681,7 @@ def precisa_buscar(p):
 def responder_gemini(system_prompt, historico, mensagem_com_contexto):
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-preview-04-17",
+        model_name="gemini-2.5-flash",
         system_instruction=system_prompt
     )
     hist_fmt = []
@@ -701,7 +704,12 @@ def responder_groq(system_prompt, historico, mensagem_com_contexto):
               "temperature": 0.5, "max_tokens": 1024},
         timeout=30
     )
-    return resp.json()["choices"][0]["message"]["content"]
+    data = resp.json()
+    if "choices" not in data:
+        # Repassa a mensagem de erro real da API (chave invalida, limite de uso,
+        # modelo indisponivel etc.) em vez de estourar KeyError('choices').
+        raise RuntimeError(f"Groq API - {data.get('error', {}).get('message', data)}")
+    return data["choices"][0]["message"]["content"]
 
 # ── CHAT INPUT ────────────────────────────────────────────────
 entrada = st.chat_input(f"Pergunte sobre {config['badge'].lower()}...")
@@ -736,14 +744,16 @@ if entrada:
     msg_completa = f"{contexto}Pergunta: {entrada}"
 
     resposta = None
+    erro_gemini = None
+    erro_groq = None
 
     # Tenta Gemini
     if GEMINI_API_KEY:
         try:
             with st.spinner("Paulo AI está pensando..."):
                 resposta = responder_gemini(system, hist_gem[:-1], msg_completa)
-        except Exception:
-            pass
+        except Exception as e:
+            erro_gemini = str(e)
 
     # Fallback Groq
     if resposta is None and GROQ_API_KEY:
@@ -751,10 +761,19 @@ if entrada:
             with st.spinner("Paulo AI está pensando..."):
                 resposta = responder_groq(system, hist_gem[:-1], msg_completa)
         except Exception as e:
-            resposta = f"Erro: {e}"
+            erro_groq = str(e)
 
     if resposta is None:
-        resposta = "Configure ao menos uma API key (Gemini ou Groq)."
+        if not GEMINI_API_KEY and not GROQ_API_KEY:
+            resposta = "Configure ao menos uma API key (Gemini ou Groq)."
+        else:
+            # Mostra o motivo real de cada provedor ter falhado (chave invalida,
+            # limite de uso, modelo indisponivel etc.) em vez de um erro generico.
+            detalhes = " | ".join(filter(None, [
+                f"Gemini: {erro_gemini}" if erro_gemini else None,
+                f"Groq: {erro_groq}" if erro_groq else None,
+            ]))
+            resposta = f"Não consegui gerar uma resposta agora. Detalhe técnico: {detalhes}"
 
     st.chat_message("assistant").write(resposta)
     msgs.append({"role": "assistant", "content": resposta})
